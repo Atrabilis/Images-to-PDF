@@ -58,5 +58,5 @@ with open('imagenes.pdf', 'rb') as pdf_file:
         pdf_writer.add_page(page)
 
     # Guarda el archivo PDF sin la primera página
-    with open('archivo_sin_primera_pagina.pdf', 'wb') as output_file:
+    with open('Imagenes.pdf', 'wb') as output_file:
         pdf_writer.write(output_file)
