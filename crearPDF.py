@@ -1,10 +1,12 @@
+import os
 import PyPDF2
 from fpdf import FPDF
 from PIL import Image
-import os
+from PyPDF4.pdf import PdfFileReader, PdfFileWriter
+from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
+
+
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -58,5 +60,90 @@ with open('imagenes.pdf', 'rb') as pdf_file:
         pdf_writer.add_page(page)
 
     # Guarda el archivo PDF sin la primera página
-    with open('Imagenes.pdf', 'wb') as output_file:
+    with open('imagenes.pdf', 'wb') as output_file:
         pdf_writer.write(output_file)
+
+def create_page_pdf(num, tmp):
+    c = canvas.Canvas(tmp)
+    for i in range(1, num + 1):
+        c.drawString((210 // 2) * mm, (4) * mm, str(i))
+        c.showPage()
+    c.save()
+
+
+def add_page_numgers(pdf_path):
+    """
+    Add page numbers to a pdf, save the result as a new pdf
+    @param pdf_path: path to pdf
+    """
+    tmp = "__tmp.pdf"
+
+    writer = PdfFileWriter()
+    with open(pdf_path, "rb") as f:
+        reader = PdfFileReader(f, strict=False)
+        n = reader.getNumPages()
+
+        # create new PDF with page numbers
+        create_page_pdf(n, tmp)
+
+        with open(tmp, "rb") as ftmp:
+            number_pdf = PdfFileReader(ftmp)
+            # iterarte pages
+            for p in range(n):
+                page = reader.getPage(p)
+                numberLayer = number_pdf.getPage(p)
+                # merge number page with actual page
+                page.mergePage(numberLayer)
+                writer.addPage(page)
+
+            # write result
+            if writer.getNumPages():
+                newpath = pdf_path[:-4] + "_numbered.pdf"
+                with open(newpath, "wb") as f:
+                    writer.write(f)
+        os.remove(tmp)
+
+
+
+def create_page_pdf(num, tmp):
+    c = canvas.Canvas(tmp)
+    for i in range(1, num + 1):
+        c.drawString((210 // 2) * mm, (4) * mm, str(i))
+        c.showPage()
+    c.save()
+
+
+def add_page_numgers(pdf_path):
+    """
+    Add page numbers to a pdf, save the result as a new pdf
+    @param pdf_path: path to pdf
+    """
+    tmp = "__tmp.pdf"
+
+    writer = PdfFileWriter()
+    with open(pdf_path, "rb") as f:
+        reader = PdfFileReader(f, strict=False)
+        n = reader.getNumPages()
+
+        # create new PDF with page numbers
+        create_page_pdf(n, tmp)
+
+        with open(tmp, "rb") as ftmp:
+            number_pdf = PdfFileReader(ftmp)
+            # iterarte pages
+            for p in range(n):
+                page = reader.getPage(p)
+                numberLayer = number_pdf.getPage(p)
+                # merge number page with actual page
+                page.mergeTranslatedPage(numberLayer, 270, 10, expand=False)
+                writer.addPage(page)
+
+            # write result
+            if writer.getNumPages():
+                newpath = pdf_path[:-4] + "_numbered.pdf"
+                with open(newpath, "wb") as f:
+                    writer.write(f)
+        os.remove(tmp)
+
+
+add_page_numgers("./imagenes.pdf")
